@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- SIGNATURE :: signature.html :: v1.6.0 -->
+<!-- SIGNATURE :: signature.html :: v1.7.0 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -70,6 +70,33 @@ header.masthead{
 /* ---- station tabs ---- */
 nav.stations{border-bottom:1px solid var(--rule); background:var(--board-2)}
 .stations-inner{max-width:1400px; margin:0 auto; display:flex; overflow-x:auto}
+.jobbar{
+  display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center;
+  max-width:1180px; margin:0 auto; padding:9px 20px;
+  border-bottom:1px solid var(--rule); font-size:.79rem; color:var(--bone-dim);
+}
+.jobbar .jb{ white-space:nowrap; }
+.jobbar .jb b{ color:var(--bone); font-weight:600; }
+.jobbar .jb-state{ margin-left:auto; font-weight:700; }
+.jobbar .jb-state.ok{ color:var(--teal); }
+.jobbar .jb-state.warn{ color:var(--oxblood); }
+@media (max-width:640px){ .jobbar .jb-state{ margin-left:0; } }
+details.more{
+  margin-top:11px; border-top:1px solid var(--rule); padding-top:9px;
+}
+details.more > summary{
+  cursor:pointer; font-size:.8rem; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--bone-dim); padding:9px 2px; min-height:44px; display:flex; align-items:center;
+}
+details.more > summary:hover{ color:var(--bone); }
+details.more > summary:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+details.more[open] > summary{ color:var(--linen); margin-bottom:5px; }
+.tab-warn{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:17px; height:17px; margin-left:7px; padding:0 4px;
+  border-radius:9px; background:#8f2f26; color:#fff;
+  font-size:.7rem; font-weight:700; line-height:1; vertical-align:middle;
+}
 .station-tab{
   appearance:none; background:none; border:0; border-bottom:3px solid transparent;
   color:var(--bone-dim); font-family:var(--mono); font-size:.76rem; letter-spacing:.16em;
@@ -197,6 +224,8 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
       <p class="mast-sub">Field Instrument 127 &middot; bookbinding imposition &middot; <span id="verLabel">v1.0.0</span></p>
     </div>
     <div class="mast-tools">
+      <label class="sr-only" for="selUnit">Units</label>
+      <select id="selUnit" style="max-width:11ch"><option value="mm">mm</option><option value="in">inches</option></select>
       <label class="sr-only" for="themeSel">Theme</label>
       <select id="themeSel" style="max-width:16ch">
         <option value="bindery">Bindery (night)</option>
@@ -219,6 +248,15 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
   </div>
 </nav>
 
+<div class="jobbar" id="jobBar" aria-live="polite">
+  <span class="jb" id="jbStructure">&mdash;</span>
+  <span class="jb" id="jbFormat">&mdash;</span>
+  <span class="jb" id="jbPages">&mdash;</span>
+  <span class="jb" id="jbSheets">&mdash;</span>
+  <span class="jb" id="jbBlock">&mdash;</span>
+  <span class="jb jb-state" id="jbState">&mdash;</span>
+</div>
+
 <main>
 
 <!-- ============================ COPY ============================ -->
@@ -240,8 +278,11 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
           <div class="btn-row">
             <button class="btn" id="btnLoadText">Load .txt or .md</button>
             <button class="btn ghost" id="btnSample">Load sample</button>
+            <button class="btn ghost" id="btnLoadFeed">Load a saved feed</button>
           </div>
-          <input type="file" id="fileText" accept=".txt,.md,.markdown,text/plain" class="sr-only">
+          <input type="file" id="fileText" aria-label="Load a text or markdown file" accept=".txt,.md,.markdown,text/plain" class="sr-only">
+          <input type="file" id="fileFeed" aria-label="Load a saved RSS or Atom file" accept=".xml,.rss,.atom,application/xml,text/xml" class="sr-only">
+          <p class="hint" style="font-size:.78rem;color:var(--bone-dim);margin:6px 0 0">A feed is read from a file you saved, never fetched. Bind a year of reading into a commonplace book.</p>
           <div class="field"><label for="inTitle">Title</label></div>
           <input type="text" id="inTitle" value="A Small Book">
           <div class="field" style="margin-top:9px"><label for="inAuthor">Author</label></div>
@@ -258,45 +299,46 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
             <input type="checkbox" id="cbJustify" checked>
             <label for="cbJustify">Justify body text</label>
           </div>
-          <div class="check">
-            <input type="checkbox" id="cbHyphen" checked>
-            <label for="cbHyphen">Hyphenate at line ends</label>
-          </div>
-          <div class="check">
-            <input type="checkbox" id="cbWidows" checked>
-            <label for="cbWidows">Keep stray lines off the page turn</label>
-          </div>
-          <div class="check">
-            <input type="checkbox" id="cbRunHeads" checked>
-            <label for="cbRunHeads">Running heads</label>
-          </div>
-          <div class="check">
-            <input type="checkbox" id="cbSmallCaps" checked>
-            <label for="cbSmallCaps">Open each chapter in small caps</label>
-          </div>
-          <div class="field" style="margin-top:9px"><label for="inDrop">Drop cap depth, in lines (0 for none)</label></div>
-          <input type="number" id="inDrop" value="3" min="0" max="6" step="1">
-          <div class="check" style="margin-top:9px">
-            <input type="checkbox" id="cbHalfTitle">
-            <label for="cbHalfTitle">Set a half title</label>
-          </div>
-          <div class="field" style="margin-top:9px"><label for="inDedication">Dedication</label></div>
-          <textarea id="inDedication" rows="2" placeholder="for whoever it is for"></textarea>
-          <div class="field" style="margin-top:9px"><label for="inColophon">Colophon</label></div>
-          <textarea id="inColophon" rows="3" placeholder="Set in Times and printed at home. Sewn by hand in three signatures."></textarea>
-          <div class="field" style="margin-top:9px"><label for="inHyphEx">Hyphenation exceptions</label></div>
-          <textarea id="inHyphEx" rows="2" placeholder="pho-tog-ra-pher, book-bind-ing"></textarea>
+          <details class="more">
+            <summary>Fine typesetting</summary>
+            <div class="check">
+              <input type="checkbox" id="cbHyphen" checked>
+              <label for="cbHyphen">Hyphenate at line ends</label>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="cbWidows" checked>
+              <label for="cbWidows">Keep stray lines off the page turn</label>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="cbRunHeads" checked>
+              <label for="cbRunHeads">Running heads</label>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="cbSmallCaps" checked>
+              <label for="cbSmallCaps">Open each chapter in small caps</label>
+            </div>
+            <div class="field" style="margin-top:9px"><label for="inDrop">Drop cap depth, in lines (0 for none)</label></div>
+            <input type="number" id="inDrop" value="3" min="0" max="6" step="1">
+            <div class="field" style="margin-top:9px"><label for="inHyphEx">Hyphenation exceptions</label></div>
+            <textarea id="inHyphEx" rows="2" placeholder="pho-tog-ra-pher, book-bind-ing"></textarea>
+          </details>
+          <details class="more">
+            <summary>Front and back matter</summary>
+            <div class="check">
+              <input type="checkbox" id="cbHalfTitle">
+              <label for="cbHalfTitle">Set a half title</label>
+            </div>
+            <div class="field" style="margin-top:9px"><label for="inDedication">Dedication</label></div>
+            <textarea id="inDedication" rows="2" placeholder="for whoever it is for"></textarea>
+            <div class="field" style="margin-top:9px"><label for="inColophon">Colophon</label></div>
+            <textarea id="inColophon" rows="3" placeholder="Set in Times and printed at home. Sewn by hand in three signatures."></textarea>
+          </details>
         </div>
-        <div class="btn-row" id="feedRow" style="margin-top:9px">
-          <button class="btn ghost" id="btnLoadFeed">Open a saved RSS or Atom file</button>
-        </div>
-        <input type="file" id="fileFeed" accept=".xml,.rss,.atom,application/xml,text/xml" class="sr-only">
-        <p class="hint" style="font-size:.78rem;color:var(--bone-dim)">Nothing is fetched. Save a feed to disk first, then bind a year of reading into a commonplace book.</p>
         <div id="pdfSrcBits" hidden>
           <div class="btn-row">
             <button class="btn" id="btnLoadPdf">Open a PDF</button>
           </div>
-          <input type="file" id="filePdf" accept="application/pdf,.pdf" class="sr-only">
+          <input type="file" id="filePdf" aria-label="Open a PDF" accept="application/pdf,.pdf" class="sr-only">
           <div class="field">
             <label for="inPdfPages">Pages in the PDF</label>
             <input type="number" id="inPdfPages" value="32" min="1" max="4096" step="1">
@@ -359,15 +401,11 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
       <fieldset class="panel">
         <legend>Sheet</legend>
         <div class="field">
-          <label for="selUnit">Units</label>
-          <select id="selUnit"><option value="mm">millimetres</option><option value="in">inches</option></select>
-        </div>
-        <div class="field">
           <label for="selSheet">Sheet size</label>
           <select id="selSheet"></select>
         </div>
-        <div class="field"><label for="inSheetW">Sheet width</label><input type="number" id="inSheetW" step=".1"></div>
-        <div class="field"><label for="inSheetH">Sheet height</label><input type="number" id="inSheetH" step=".1"></div>
+        <div class="field"><label for="inSheetW">Sheet width</label><input type="number" id="inSheetW" min="10" step=".1"></div>
+        <div class="field"><label for="inSheetH">Sheet height</label><input type="number" id="inSheetH" min="10" step=".1"></div>
         <div class="field"><label for="inCaliper">Paper caliper</label><input type="number" id="inCaliper" value="0.1" step=".005" min=".01"></div>
         <div class="field">
           <label for="selGrain">Grain runs</label>
@@ -567,50 +605,52 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
   <div class="cols">
     <div>
       <fieldset class="panel">
-        <legend>Output</legend>
-        <div class="btn-row" style="flex-direction:column;align-items:stretch">
-          <button class="btn primary" id="btnPdfImposed">Print imposed sheets</button>
-          <button class="btn" id="btnPdfPunch">Print punching template</button>
-          <button class="btn" id="btnPdfBench">Print bench sheet</button>
-          <button class="btn" id="btnPdfCalib">Print calibration sheet</button>
-          <button class="btn" id="btnPdfWorkOrder">Print the bench punch list</button>
-        </div>
-        <div class="check"><input type="checkbox" id="cbSideSplit"><label for="cbSideSplit">Split into fronts file then backs file (manual duplex)</label></div>
+        <legend>Before you print</legend>
+        <div id="preflight" class="note"></div>
       </fieldset>
       <fieldset class="panel">
-        <legend>Bridges</legend>
-        <p class="hint" style="font-size:.78rem;color:var(--bone-dim);margin-top:0">The case parts leave as SVG and DXF, which is what CUTLINE and CUTPLANNER already read. The materials leave as a BOM CSV for TALLY.</p>
+        <legend>Print</legend>
+        <p class="hint" style="font-size:.78rem;color:var(--bone-dim);margin-top:0">Print the calibration sheet first. Fold it by the sequence on the Fold station and read the numbers: if they run 1, 2, 3 in order you are set. If the backs come out reversed or upside down, change <em>Second side is turned</em> on the Fold station and print it again. One sheet settles it.</p>
+        <div class="btn-row" style="flex-direction:column;align-items:stretch">
+          <button class="btn" id="btnPdfCalib">1. Calibration sheet</button>
+          <button class="btn primary" id="btnPdfImposed">2. Imposed sheets</button>
+          <button class="btn" id="btnPdfPunch">3. Punching template</button>
+          <button class="btn" id="btnPdfWorkOrder">4. Bench punch list</button>
+        </div>
+        <div class="check"><input type="checkbox" id="cbSideSplit"><label for="cbSideSplit">Split into fronts file then backs file (manual duplex)</label></div>
+        <details class="more">
+          <summary>Also available</summary>
+          <div class="btn-row" style="flex-direction:column;align-items:stretch">
+            <button class="btn ghost" id="btnPdfBench">Bench sheet (all the numbers on one page)</button>
+          </div>
+        </details>
+      </fieldset>
+      <fieldset class="panel">
+        <legend>Hand off</legend>
+        <p class="hint" style="font-size:.78rem;color:var(--bone-dim);margin-top:0">The case parts leave as SVG and DXF, which CUTLINE and CUTPLANNER already read. The materials leave as a BOM CSV for TALLY.</p>
         <div class="btn-row" style="flex-direction:column;align-items:stretch">
           <button class="btn" id="btnPartsSvg">Case parts to SVG</button>
           <button class="btn" id="btnPartsDxf">Case parts to DXF</button>
           <button class="btn" id="btnBomCsv">Materials to BOM CSV</button>
+          <button class="btn ghost" id="btnOrderCsv">Imposition order to CSV</button>
         </div>
         <p class="hint" style="font-size:.78rem;color:var(--bone-dim)">The BOM header row is Reference, MPN, Description, Qty, Unit, Note. If the quoting bench expects other column names, they are one edit away in the file it reads.</p>
-      </fieldset>
-      <fieldset class="panel">
-        <legend>Installing this instrument</legend>
-        <div id="installNote" class="note"></div>
-        <div class="btn-row" style="flex-direction:column;align-items:stretch">
-          <button class="btn ghost" id="btnSw">Download the service worker</button>
-        </div>
       </fieldset>
       <fieldset class="panel">
         <legend>Project</legend>
         <div class="btn-row" style="flex-direction:column;align-items:stretch">
           <button class="btn" id="btnSave">Save project</button>
           <button class="btn" id="btnOpen">Open project</button>
-          <button class="btn ghost" id="btnOrderCsv">Export imposition order (CSV)</button>
         </div>
-        <input type="file" id="fileProj" accept=".json,application/json" class="sr-only">
+        <input type="file" id="fileProj" aria-label="Open a saved project" accept=".json,application/json" class="sr-only">
       </fieldset>
-      <fieldset class="panel">
-        <legend>Bench log</legend>
+      <details class="more">
+        <summary>Bench log</summary>
         <div class="check"><input type="checkbox" id="cbDebug"><label for="cbDebug">Debug logging</label></div>
         <pre class="log" id="logOut">ready.</pre>
-      </fieldset>
+      </details>
     </div>
     <div>
-      <div class="note"><strong>Before the first run.</strong> Print the calibration sheet, fold it by the sequence on the Fold station, and read the numbers in the folded booklet. If they run 1, 2, 3 in order you are set. If the backs are upside down or reversed, change <em>Second side is turned</em> on the Fold station and print it again.</div>
       <fieldset class="panel">
         <legend>Imposition order</legend>
         <p class="hint" style="font-size:.78rem;color:var(--bone-dim);margin-top:0">Front and back of every sheet, read left to right and top to bottom. <code>b</code> marks a blank, <code>&#8595;</code> marks a page that prints upside down.</p>
@@ -635,6 +675,7 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
     <h4>How the fold is worked out</h4>
     <p>The imposition is not a lookup table. Each format is folded in simulation with explicit geometry, and the page order, the rotations, the spine edge and the role of every crease are read back off the folded result. The instrument checks its own work: a section whose spine does not land on the left edge is refused, because it would have to be turned a quarter turn to read.</p>
     <h4>What changed</h4>
+    <p><strong>1.7</strong> is a clearing up rather than a new capability. Every warning the instrument can raise now goes into one list, so a fault found at the sewing bench is visible from the station where you commit paper, counted on the station tab and listed under Before you print. A job bar under the tabs keeps the decisions you have made in view from everywhere. The unit moved to the masthead, where a setting that governs every number belongs. The fine typesetting choices, the back matter, the diagnostics and the secondary sheets are folded away, and printing is numbered in the order you do it.</p>
     <p><strong>1.6</strong> prints a bench punch list: every measurement in the order you actually work, with a box to tick and a line to write the block thickness you really got. The instrument can also be installed as an app when it is served over http, and says plainly that from a file on disk there is nothing to install because it is already offline.</p>
     <p><strong>1.5</strong> hands work to the rest of the bench without inventing a file format. The case parts leave as SVG and DXF, which the laser instruments already read, and the materials leave as a BOM CSV. A saved RSS or Atom file can be read in as a manuscript, so a year of reading becomes a commonplace book.</p>
     <p><strong>1.4</strong> adds Coptic link stitch sewn into drilled boards, longstitch through a slit wrapper, and Japanese stab sewing, which is not folded at all and switches the instrument to single leaves and a cut line. Rounding and backing became real arc geometry instead of a fudge factor, and headbands are checked against the square they have to fit in.</p>
@@ -657,6 +698,9 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
     <p>Reading a PDF needs the browser's DecompressionStream, which every current browser has. Encrypted PDFs are refused. A page whose content is split across several streams is expanded and re-joined, so those pages come out larger than they went in; the common single stream case is copied untouched. Lines that carry a drop cap or small caps are positioned word by word rather than as one run, which slightly weakens copy and paste on those few lines only.</p>
     <p>Character coverage is the printable ASCII range plus a small map of common punctuation. Swell, board and cloth allowances are working estimates for a bench, not shop specifications: measure the block you actually sewed.</p>
     <p>Push out is a geometric model. Real paper crushes at the fold, so the retained fraction is yours to set, and the honest way to set it is to fold a dummy section and measure it.</p>
+    <h4>Installing this</h4>
+    <div id="installNote" class="note"></div>
+    <p><button class="btn ghost" id="btnSw">Download the service worker</button></p>
     <h4>Feedback</h4>
     <p>Send notes to the Green Shoe Garage bench: <a href="https://greenshoegarage.com" target="_blank" rel="noopener">greenshoegarage.com</a></p>
   </div>
@@ -670,12 +714,12 @@ footer.colophon{border-top:1px solid var(--rule); margin-top:32px; padding:var(-
 <script>
 "use strict";
 /* =====================================================================
-   SIGNATURE :: FI-127 :: v1.6.0
+   SIGNATURE :: FI-127 :: v1.7.0
    Single file. Runs from file://. No build step, no network, no storage
    beyond what the operator explicitly saves to disk.
    ===================================================================== */
 
-const VERSION = "1.6.0";
+const VERSION = "1.7.0";
 const PT_PER_MM = 72 / 25.4;
 const PT_PER_IN = 72;
 
@@ -1819,69 +1863,160 @@ function gather(){
 }
 
 /** Warnings and readouts that depend on the structure you chose. */
-function renderStructureNotes(g, sm, rb, hb, cm){
+function renderStructureNotes(g, sm, rb, hb, cm, N){
   const rounded = g.binding === "round";
   $("roSpineW").innerHTML = fmt(cm.spineW || sm.block) + " <small>" + S.unit + "</small>";
   $("roArc").innerHTML = rounded ? fmt(rb.arc) + " <small>" + S.unit + "</small>" : "&mdash;";
   $("roSagitta").innerHTML = rounded ? fmt(rb.sagitta) + " <small>" + S.unit + "</small>" : "&mdash;";
 
-  const notes = [];
   if(rounded){
-    notes.push('<div class="note">The spine carries ' + Math.round(rb.degrees) + ' degrees of arc. ' +
-      'Cover material has to travel ' + fmt(rb.arc) + " " + S.unit + ' across it, which is ' +
-      fmt(rb.extra) + ' more than the flat chord. Backing splays the block to ' + fmt(rb.chord) +
-      " " + S.unit + ' shoulder to shoulder.</div>');
+    N.note("case", "The spine carries " + Math.round(rb.degrees) + " degrees of arc. Cover material has to " +
+      "travel " + fmt(rb.arc) + " " + S.unit + " across it, which is " + fmt(rb.extra) +
+      " more than the flat chord. Backing splays the block to " + fmt(rb.chord) + " " + S.unit +
+      " shoulder to shoulder.");
     if(g.shoulder > g.board * 1.35 || g.shoulder < g.board * 0.65){
-      notes.push('<div class="note warn"><strong>The shoulder does not match the board.</strong> ' +
-        'A shoulder of ' + fmt(g.shoulder) + ' against a ' + fmt(g.board) + " " + S.unit +
-        ' board will leave the board riding on the joint instead of seated against the shoulder.</div>');
+      N.warn("case", "The shoulder does not match the board.",
+        "A shoulder of " + fmt(g.shoulder) + " against a " + fmt(g.board) + " " + S.unit +
+        " board will leave the board riding on the joint instead of seated against the shoulder.");
     }
     if(sm.swell <= 0){
-      notes.push('<div class="note warn"><strong>There is no swell to round.</strong> ' +
-        'Rounding works by redistributing the thread already at the spine. With no swell the block will ' +
-        'not hold a round, and it will flatten back under the boards.</div>');
+      N.warn("case", "There is no swell to round.",
+        "Rounding works by redistributing the thread already at the spine. With no swell the block " +
+        "will not hold a round, and it will flatten back under the boards.");
     }
     if(sm.block < 8 * PT_PER_MM){
-      notes.push('<div class="note warn"><strong>This block is too thin to round well.</strong> ' +
-        'At ' + fmt(sm.block) + " " + S.unit + ' there is little to hammer. A flat back is the honest choice.</div>');
+      N.warn("case", "This block is too thin to round well.",
+        "At " + fmt(sm.block) + " " + S.unit + " there is little to hammer. A flat back is the honest choice.");
     }
   }
   if(g.headband){
-    notes.push('<div class="note' + (hb.fits ? '' : ' warn') + '">' +
-      (hb.fits
-        ? 'Headbands: cut two at ' + fmt(hb.cut) + " " + S.unit + ', ' + fmt(hb.clearance) +
-          ' of square left clear above the core.'
-        : '<strong>The headband will not fit the square.</strong> A ' + fmt(hb.core) +
-          " " + S.unit + ' core against a ' + fmt(g.square) +
-          ' square leaves nothing, so the headband will stand proud of the boards and take the wear.') +
-      '</div>');
+    if(hb.fits){
+      N.note("case", "Headbands: cut two at " + fmt(hb.cut) + " " + S.unit + ", " + fmt(hb.clearance) +
+        " of square left clear above the core.");
+    } else {
+      N.warn("case", "The headband will not fit the square.",
+        "A " + fmt(hb.core) + " " + S.unit + " core against a " + fmt(g.square) +
+        " square leaves nothing, so the headband will stand proud of the boards and take the wear.");
+    }
   }
   if(g.sewStyle === "stab"){
     const need = g.stabInset + 4 * PT_PER_MM;
-    notes.push('<div class="note' + (g.mIn >= need ? '' : ' warn') + '">' +
-      (g.mIn >= need
-        ? 'Side sewn: the sewing runs ' + fmt(g.stabInset) + " " + S.unit +
-          ' in from the spine edge, clear of a ' + fmt(g.mIn) + ' gutter.'
-        : '<strong>The gutter is too narrow for side sewing.</strong> Holes fall ' + fmt(g.stabInset) +
-          " " + S.unit + ' in from the spine edge but the gutter is only ' + fmt(g.mIn) +
-          ', so the thread will run through the text. Widen the gutter to at least ' + fmt(need) + '.') +
-      '</div>');
-    notes.push('<div class="note">A side sewn book does not open flat. Allow for that in the gutter ' +
-      'whatever the sewing needs.</div>');
+    if(g.mIn >= need){
+      N.note("sew", "Side sewn: the sewing runs " + fmt(g.stabInset) + " " + S.unit +
+        " in from the spine edge, clear of a " + fmt(g.mIn) + " gutter.");
+    } else {
+      N.warn("sew", "The gutter is too narrow for side sewing.",
+        "Holes fall " + fmt(g.stabInset) + " " + S.unit + " in from the spine edge but the gutter is only " +
+        fmt(g.mIn) + ", so the thread will run through the text. Widen the gutter to at least " +
+        fmt(need) + ".");
+    }
+    N.note("sew", "A side sewn book does not open flat. Allow for that in the gutter whatever the sewing needs.");
   }
   if(g.sewStyle === "coptic"){
-    notes.push('<div class="note">Coptic: the boards are drilled to the same stations as the sections, ' +
-      fmt(g.boardHole) + " " + S.unit + ' in from the spine edge. There is no case and no spine ' +
-      'covering, so the sewing is the binding and the decoration both.</div>');
+    N.note("sew", "Coptic: the boards are drilled to the same stations as the sections, " +
+      fmt(g.boardHole) + " " + S.unit + " in from the spine edge. There is no case and no spine covering, " +
+      "so the sewing is the binding and the decoration both.");
   }
   if(g.sewStyle === "longstitch"){
-    notes.push('<div class="note">Longstitch: the wrapper is slit at each station and the thread shows ' +
-      'on the outside of the spine. Slits run ' + fmt(g.longStitch) + " " + S.unit + ' each.</div>');
+    N.note("sew", "Longstitch: the wrapper is slit at each station and the thread shows on the outside " +
+      "of the spine. Slits run " + fmt(g.longStitch) + " " + S.unit + " each.");
   }
-  $("structureNote").innerHTML = notes.join("");
+}
+
+/**
+ * One list of everything the instrument wants to tell you about this job.
+ * A note is raised once, at the station it belongs to, and then shown in
+ * three places: that station, a count on the station tab, and the preflight
+ * panel on Press. Before this existed a warning raised at the sewing bench
+ * was invisible from the station where you commit paper, which is exactly
+ * where you needed to see it.
+ */
+function Notebook(){ this.items = []; }
+Notebook.prototype.warn = function(station, title, body, slot){
+  this.items.push({station, level:"warn", title, body, slot:slot || null});
+};
+Notebook.prototype.note = function(station, body, slot){
+  this.items.push({station, level:"note", title:"", body, slot:slot || null});
+};
+Notebook.prototype.at = function(station){ return this.items.filter(n => n.station === station); };
+Notebook.prototype.warnings = function(){ return this.items.filter(n => n.level === "warn"); };
+
+function noteHtml(list){
+  return list.map(n => '<div class="note' + (n.level === "warn" ? " warn" : "") + '">' +
+    (n.title ? "<strong>" + n.title + "</strong> " : "") + n.body + "</div>").join("");
+}
+
+/** The job bar: the decisions you have made, readable from any station. */
+function renderJobBar(g, imp, sm, N){
+  const info = SEW_INFO[g.sewStyle] || SEW_INFO.link;
+  const sheets = imp.sigs.reduce((a, sig) => a + sig.sheets.length, 0);
+  const set = (id, label, value) => {
+    const el = $(id); if(el) el.innerHTML = label + " <b>" + value + "</b>";
+  };
+  set("jbStructure", "Structure", esc(info.label));
+  set("jbFormat", g.sideSewn ? "Leaves" : "Format",
+      g.sideSewn ? g.F.nx + " across, cut" : esc(g.F.label));
+  set("jbPages", "Pages", imp.padded + (S.nPages < imp.padded ? " (" + S.nPages + " set)" : ""));
+  set("jbSheets", "Sheets", sheets + " \u00d7 " + fmt(g.sheetW) + "\u00d7" + fmt(g.sheetH) + " " + S.unit);
+  set("jbBlock", "Block", fmt(sm.block) + " " + S.unit);
+  const w = N.warnings().length;
+  const st = $("jbState");
+  if(st){
+    st.className = "jb jb-state " + (w ? "warn" : "ok");
+    st.textContent = w ? w + (w === 1 ? " warning" : " warnings") : "ready";
+  }
+}
+
+function renderNotebook(N){
+  // a note renders beside the readout it is about, so the push out warning sits
+  // with the push out figure rather than in a pile at the top of the station
+  const slots = {fold:"grainNote", sew:"sewNote", case:"structureNote"};
+  const buckets = {};
+  for(const id of ["grainNote", "spineNote", "creepNote", "sewNote", "structureNote"]) buckets[id] = [];
+  for(const n of N.items){
+    const id = (n.slot && buckets[n.slot]) ? n.slot : slots[n.station];
+    if(buckets[id]) buckets[id].push(n);
+  }
+  for(const id of Object.keys(buckets)){
+    const el = $(id); if(el) el.innerHTML = noteHtml(buckets[id]);
+  }
+  // a count on the tab, so a warning raised elsewhere is visible from here
+  for(const st of ["copy", "fold", "sew", "case", "press"]){
+    const tab = document.querySelector('.station-tab[data-station="' + st + '"]');
+    if(!tab) continue;
+    let badge = tab.querySelector(".tab-warn");
+    const n = N.at(st).filter(x => x.level === "warn").length;
+    if(n === 0){ if(badge) badge.remove(); continue; }
+    if(!badge){
+      badge = document.createElement("span");
+      badge.className = "tab-warn";
+      tab.appendChild(badge);
+    }
+    badge.textContent = String(n);
+    badge.title = n + (n === 1 ? " warning" : " warnings") + " at this station";
+  }
+  // preflight
+  const warns = N.warnings();
+  const pf = $("preflight");
+  if(pf){
+    if(!warns.length){
+      pf.className = "note";
+      pf.innerHTML = "<strong>Nothing is complaining.</strong> The fold makes a book, the grain runs the " +
+        "right way, and the trim covers the push out. Print the calibration sheet first anyway.";
+    } else {
+      pf.className = "note warn";
+      pf.innerHTML = "<strong>" + warns.length + (warns.length === 1 ? " thing wants" : " things want") +
+        " attention before you commit paper.</strong><ul style=\"margin:8px 0 0;padding-left:20px\">" +
+        warns.map(n => '<li><a href="#" data-goto="' + n.station + '">' +
+          n.station.charAt(0).toUpperCase() + n.station.slice(1) + "</a>: " +
+          (n.title || n.body).replace(/<[^>]+>/g, "") + "</li>").join("") + "</ul>";
+    }
+  }
 }
 
 function recompute(){
+  const N = new Notebook();
+  S.notes = N;
   const g = gather();
   let nPages;
   if(g.srcMode === "text"){
@@ -1900,14 +2035,14 @@ function recompute(){
   S.imp = g.sideSewn ? imposeSideSewn(g.stabUp, nPages) : impose(g.fmtKey, g.nest, nPages);
   S.g = g;
   S.nPages = nPages;
-  render(g);
+  render(g, N);
   return g;
 }
 
 /* =====================================================================
    7. RENDERING
    ===================================================================== */
-function render(g){
+function render(g, N){
   const imp = S.imp;
   // COPY readouts
   $("roTextPages").innerHTML = g.srcMode === "text" ? S.textPages.length : (S.nPages + " <small>pdf</small>");
@@ -1931,9 +2066,8 @@ function render(g){
   const spineAxisIsSheetHeight = (countFolds(g.F.folds, "V") >= countFolds(g.F.folds, "H"));
   const grainAxisIsWidth = (grainLong && sheetLongIsWidth) || (!grainLong && !sheetLongIsWidth);
   const ok = spineAxisIsSheetHeight ? !grainAxisIsWidth : grainAxisIsWidth;
-  $("grainNote").innerHTML = ok
-    ? '<div class="note">Grain runs parallel to the spine. That is what you want: the book will open freely and the boards will stay flat.</div>'
-    : '<div class="note warn"><strong>Grain runs across the spine.</strong> The folds will crack, the book will fight you when it opens, and the case will bow. Turn the sheet, buy the other grain, or change the format.</div>';
+  if(ok) N.note("fold", "Grain runs parallel to the spine. That is what you want: the book will open freely and the boards will stay flat.");
+  else N.warn("fold", "Grain runs across the spine.", "The folds will crack, the book will fight you when it opens, and the case will bow. Turn the sheet, buy the other grain, or change the format.");
 
   // fold steps
   const steps = $("foldSteps"); steps.innerHTML = "";
@@ -1950,9 +2084,8 @@ function render(g){
     li2.textContent = "Clamp the stack, then punch the stab holes " + fmt(g.stabInset) + " " + S.unit +
       " in from the spine edge, straight through.";
     steps.appendChild(li2);
-    $("spineNote").innerHTML = "";
     $("roCreep").innerHTML = fmt(0) + " <small>" + S.unit + "</small>";
-    $("creepNote").innerHTML = '<div class="note">Single leaves do not nest, so there is no push out to compensate.</div>';
+    N.note("fold", "Single leaves do not nest, so there is no push out to compensate.", "creepNote");
   } else {
   g.F.folds.forEach((f, i) => {
     const li = document.createElement("li");
@@ -1972,24 +2105,30 @@ function render(g){
 
   // the spine has to land on the left edge of the folded packet, or the section
   // would have to be turned a quarter turn to read
-  $("spineNote").innerHTML = (g.geom.spineEdge === "left" && !g.geom.quarterTurn) ? "" :
-    '<div class="note warn"><strong>This fold sequence does not make a book.</strong> The spine lands on the ' +
-    g.geom.spineEdge + ' edge, so the section would have to be turned a quarter turn to read.</div>';
+  if(!(g.geom.spineEdge === "left" && !g.geom.quarterTurn)){
+    N.warn("fold", "This fold sequence does not make a book.",
+      "The spine lands on the " + g.geom.spineEdge +
+      " edge, so the section would have to be turned a quarter turn to read.", "spineNote");
+  }
 
   // push out
   const push = (imp.maxDepth - 1) * g.caliper * g.creepFactor;
   $("roCreep").innerHTML = fmt(g.creep ? push : 0) + " <small>" + S.unit + "</small>";
-  $("creepNote").innerHTML = !g.creep
-    ? '<div class="note">Push out compensation is off. The innermost leaf will protrude ' + fmt(push) + " " + S.unit +
-      ' past the outermost one, and will lose that much fore edge margin when the block is trimmed.</div>'
-    : (push > g.trimFore
-      ? '<div class="note warn"><strong>The fore edge trim is smaller than the push out.</strong> The innermost leaf protrudes ' +
-        fmt(push) + " " + S.unit + ' but you are only trimming ' + fmt(g.trimFore) +
-        '. Trim more, nest fewer sheets, or use thinner paper.</div>'
-      : (push > 0
-        ? '<div class="note">Content on the innermost leaf is shifted ' + fmt(push) + " " + S.unit +
-          ' toward the spine, so every page keeps the same fore edge margin after trimming.</div>'
-        : ""));
+  if(!g.creep){
+    if(push > 0){
+      N.warn("fold", "Push out compensation is off.",
+        "The innermost leaf will protrude " + fmt(push) + " " + S.unit +
+        " past the outermost one, and will lose that much fore edge margin when the block is trimmed.",
+        "creepNote");
+    }
+  } else if(push > g.trimFore){
+    N.warn("fold", "The fore edge trim is smaller than the push out.",
+      "The innermost leaf protrudes " + fmt(push) + " " + S.unit + " but you are only trimming " +
+      fmt(g.trimFore) + ". Trim more, nest fewer sheets, or use thinner paper.", "creepNote");
+  } else if(push > 0){
+    N.note("fold", "Content on the innermost leaf is shifted " + fmt(push) + " " + S.unit +
+      " toward the spine, so every page keeps the same fore edge margin after trimming.", "creepNote");
+  }
 
   }
 
@@ -2005,15 +2144,15 @@ function render(g){
   const leaves = imp.padded / 2;
   const sm = spineMath({leaves, caliper:g.caliper, nSigs:imp.nSigs, stations:g.stations,
                         thread:g.thread, swellFactor:g.swellFactor, sewStyle:g.sewStyle});
-  S.sm = sm;
   $("roLeaves").textContent = leaves;
   $("roBulk").innerHTML = fmt(sm.bulk) + " <small>" + S.unit + "</small>";
   $("roSwell").innerHTML = fmt(sm.swell) + " <small>" + S.unit + "</small>";
   $("roBlock").innerHTML = fmt(sm.block) + " <small>" + S.unit + "</small>";
-  $("supportWidthField").hidden = !(g.sewStyle === "tape" || g.sewStyle === "cord");
-  $("sewNote").innerHTML = (g.sewStyle === "pamphlet" && imp.nSigs > 1)
-    ? '<div class="note warn"><strong>Pamphlet stitch holds one signature.</strong> This book has ' + imp.nSigs + '. Either lengthen the format so it all fits in one signature, or pick a sewing style that links sections.</div>'
-    : "";
+  if(g.sewStyle === "pamphlet" && imp.nSigs > 1){
+    N.warn("sew", "Pamphlet stitch holds one signature.",
+      "This book has " + imp.nSigs + ". Either lengthen the format so it all fits in one signature, " +
+      "or pick a sewing style that links sections.");
+  }
   const marks = sewStations({pageH:g.pageH, stations:g.stations, kettle:g.kettle, style:g.sewStyle,
                              supportW:g.supportW, longStitch:g.longStitch,
                              stabHoles:g.stabHoles, stabMargin:g.stabMargin});
@@ -2033,7 +2172,7 @@ function render(g){
                            spineArc:(g.binding === "round" ? rb.arc : sm.block),
                            square:g.square});
   S.hb = hb;
-  renderStructureNotes(g, sm, rb, hb, cm);
+  renderStructureNotes(g, sm, rb, hb, cm, N);
   $("roBoard").innerHTML = fmt(cm.boardW) + " <small>&times;</small> " + fmt(cm.boardH) + " <small>" + S.unit + "</small>";
   $("roInlay").innerHTML = fmt(cm.inlayW) + " <small>&times;</small> " + fmt(cm.inlayH) + " <small>" + S.unit + "</small>";
   $("roCloth").innerHTML = fmt(cm.clothW) + " <small>&times;</small> " + fmt(cm.clothH) + " <small>" + S.unit + "</small>";
@@ -2043,7 +2182,9 @@ function render(g){
 
   // PRESS
   renderOrderTable(g, imp);
-  log("recomputed", {pages:S.nPages, sigs:imp.nSigs});
+  renderJobBar(g, imp, sm, N);
+  renderNotebook(N);
+  log("recomputed", {pages:S.nPages, sigs:imp.nSigs, warnings:N.warnings().length});
 }
 function countFolds(arr, k){ return arr.filter(x => x === k).length; }
 
@@ -3823,7 +3964,7 @@ function installLayer(){
     document.head.appendChild(ic);
   } catch(e){ /* cosmetic only */ }
   const served = location.protocol === "http:" || location.protocol === "https:";
-  const note = $("installNote");
+  const note = $("installNote") || {};
 
   if(served){
     // a manifest can be handed over as a blob, which keeps this one file
@@ -4866,6 +5007,14 @@ function init(){
   $("cbDebug").addEventListener("change", e => { DEBUG = e.target.checked; say(DEBUG ? "debug logging on." : "debug logging off."); });
 
   $("btnAbout").addEventListener("click", () => $("dlgAbout").showModal());
+  // a warning in the preflight list is a link to the station that raised it
+  $("preflight").addEventListener("click", e => {
+    const a = e.target.closest("[data-goto]");
+    if(!a) return;
+    e.preventDefault();
+    const tab = document.querySelector('.station-tab[data-station="' + a.dataset.goto + '"]');
+    if(tab) tab.click();
+  });
   $("btnSelfTest").addEventListener("click", selfTest);
   document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
 

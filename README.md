@@ -1,6 +1,6 @@
 # SIGNATURE
 
-**Field Instrument 127** &middot; version 1.6.0
+**Field Instrument 127** &middot; version 1.7.0
 
 A bookbinding imposition bench that runs in a browser, offline, from a single file.
 
@@ -16,7 +16,15 @@ Open `signature.html` in a browser. There is no server, no build step and no net
 **Fold** &middot; sheet, format, formes, and the fold sequence to follow.
 **Sew** &middot; stations, swell, and the punching template.
 **Case** &middot; boards, cloth, and the cut list.
-**Press** &middot; PDF output, the order table, and saving the project.
+**Press** &middot; preflight, printing in order, handing off, and saving the project.
+
+A job bar under the station tabs keeps the decisions you have made in view: structure, format, pages, sheets, block thickness, and whether anything is complaining.
+
+### One list of complaints
+
+Every warning the instrument can raise goes into a single list, tagged with the station that raised it. That list is shown in three places: beside the figure it concerns, as a count on the station tab, and in full under **Before you print**.
+
+This matters because the station where you commit paper is not the station that knows something is wrong. A fore edge trim smaller than the push out is discovered at the Fold station; the consequence lands when you print forty sheets. Now the warning follows you, and clicking it in the preflight list takes you to the station that can fix it.
 
 ---
 
@@ -100,6 +108,8 @@ What an install adds is a window and an icon, and a service worker can only be r
 
 ## Version history
 
+**1.7.0** &middot; Workflow pass. One job state feeding station notes, tab badges and a preflight panel. A persistent job bar. Units moved to the masthead. Progressive disclosure for fine typesetting, back matter and diagnostics. Printing numbered in the order you do it.
+
 **1.6.0** &middot; Bench punch list, and an install layer honest about what `file://` already gives you.
 
 **1.5.0** &middot; Bridges. Case parts to SVG and DXF, materials to BOM CSV, saved RSS or Atom in as a manuscript.
@@ -144,9 +154,9 @@ Reading a feed strips it to plain text. Images, links and formatting do not surv
 
 ## Self test
 
-The instrument carries its own tests. Press **Self test** in the header. Version 1.6.0 runs 286 assertions covering fold geometry, imposition invariants, page placement, trim and push out arithmetic, hyphenation, line breaking, page makeup, spine and case arithmetic, rounding and backing, every sewing pattern, the PDF writer, the PDF reader, and every export.
+The instrument carries its own tests. Press **Self test** in the header. Version 1.7.0 runs 286 assertions covering fold geometry, imposition invariants, page placement, trim and push out arithmetic, hyphenation, line breaking, page makeup, spine and case arithmetic, rounding and backing, every sewing pattern, the PDF writer, the PDF reader, and every export.
 
-A headless harness runs the same instrument under jsdom for release checks and adds 88 more. Some of those are deliberately not arithmetic tests: they change the sewing style through the actual controls and assert that the change reaches the sewing marks, the case and the parts list. A bug in v1.4 development left the case arithmetic stale whenever a side sewn book was chosen, and every one of the 281 in-app assertions passed while it was broken, because the fault was in the wiring rather than the mathematics.
+A headless harness runs the same instrument under jsdom for release checks and adds 113 more. Some of those are deliberately not arithmetic tests: they change the sewing style through the actual controls and assert that the change reaches the sewing marks, the case and the parts list. A bug in v1.4 development left the case arithmetic stale whenever a side sewn book was chosen, and every one of the 281 in-app assertions passed while it was broken, because the fault was in the wiring rather than the mathematics.
 
 Exports are checked outside the instrument as well. The DXF is read back with `ezdxf`, the SVG parsed as XML, the BOM parsed with a CSV reader, and re-imposed PDFs are verified by rasterizing each sheet and comparing every placed cell against a rasterization of its original source page.
 
